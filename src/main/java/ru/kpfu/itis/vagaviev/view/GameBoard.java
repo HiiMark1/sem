@@ -228,7 +228,6 @@ public class GameBoard extends Application {
 
       @Override
       public void start(Stage primaryStage) throws Exception {
-            music();
             createBoard();
             addCheckers();
             Scene scene = new Scene(gridPane, 600, 600);
