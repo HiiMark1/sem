@@ -2,33 +2,37 @@ package ru.kpfu.itis.vagaviev.view;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import ru.kpfu.itis.vagaviev.Bot;
 import ru.kpfu.itis.vagaviev.view.models.Cell;
 import ru.kpfu.itis.vagaviev.view.models.Checker;
 
-import java.nio.file.Paths;
 import java.util.Objects;
 
 public class GameBoard extends Application {
-      boolean isSinglePlayer = false;
+      boolean isSinglePlayer = true;
       GridPane gridPane = new GridPane();
       int size = 50;
       Checker[][] checkers = new Checker[8][8];
       Rectangle[][] rectangles = new Rectangle[8][8];
-      boolean isUrTurn = true;
       boolean isHaveChosenChecker = false;
       Rectangle chosenRect = new Rectangle();
       Checker chosenChecker = new Checker(0, 0, false, false);
       boolean isLongAtack = false;
-      boolean isWhiteTurn = true;
       Cell longAtackFrom = new Cell();
+      boolean is1PlayerWhite = true;
+      boolean is2PlayerWhite = false;
+      Bot bot = null;
+      Label label;
+      int color = 0;
+      int numOfTurn = 0;
 
       public void createBoard() {
             for (int row = 0; row < 8; row++) {
@@ -45,8 +49,7 @@ public class GameBoard extends Application {
                         }
                         rectangle.setStroke(Color.BLACK);
                         rectangle.setOnMouseClicked(event -> {
-                              System.out.println(isLongAtack);
-                              if (isHaveChosenChecker && (checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite() == isWhiteTurn)) {
+                              if (isHaveChosenChecker && (checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite() == is1PlayerWhite)) {
                                     if (!checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isQueen()) {
                                           if ((chosenRect.getY() + 1 == rectangle.getY() && chosenRect.getX() + 1 == rectangle.getX()) ||
                                                   (chosenRect.getY() + 1 == rectangle.getY() && chosenRect.getX() - 1 == rectangle.getX()) ||
@@ -55,15 +58,15 @@ public class GameBoard extends Application {
                                                 if (checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite()) {
                                                       if ((chosenRect.getY() - 1 == rectangle.getY() && chosenRect.getX() + 1 == rectangle.getX()) ||
                                                               (chosenRect.getY() - 1 == rectangle.getY() && chosenRect.getX() - 1 == rectangle.getX())) {
-                                                            if (!isLongAtack){
-                                                                  move(rectangle);
+                                                            if (!isLongAtack) {
+                                                                  move(rectangle,null);
                                                             }
                                                       }
                                                 } else {
                                                       if ((chosenRect.getY() + 1 == rectangle.getY() && chosenRect.getX() + 1 == rectangle.getX()) ||
                                                               (chosenRect.getY() + 1 == rectangle.getY() && chosenRect.getX() - 1 == rectangle.getX())) {
-                                                            if(!isLongAtack){
-                                                                  move(rectangle);
+                                                            if (!isLongAtack) {
+                                                                  move(rectangle,null);
                                                             }
                                                       }
                                                 }
@@ -72,9 +75,9 @@ public class GameBoard extends Application {
                                                       if ((chosenRect.getY() - 2 == rectangle.getY() && chosenRect.getX() + 2 == rectangle.getX()) &&
                                                               checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() - 1] != null &&
                                                               !checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() - 1].isWhite()) {
-                                                            if (isLongAtack){
+                                                            if (isLongAtack) {
                                                                   if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                          (int) chosenRect.getX() == longAtackFrom.getX()){
+                                                                          (int) chosenRect.getX() == longAtackFrom.getX()) {
                                                                         capture(rectangle, 1, -1);
                                                                   }
                                                             } else {
@@ -84,9 +87,9 @@ public class GameBoard extends Application {
                                                       if ((chosenRect.getY() - 2 == rectangle.getY() && chosenRect.getX() - 2 == rectangle.getX()) &&
                                                               checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() - 1] != null &&
                                                               !checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() - 1].isWhite()) {
-                                                            if (chosenRect.equals(longAtackFrom)){
+                                                            if (isLongAtack) {
                                                                   if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                          (int) chosenRect.getX() == longAtackFrom.getX()){
+                                                                          (int) chosenRect.getX() == longAtackFrom.getX()) {
                                                                         capture(rectangle, -1, -1);
                                                                   }
                                                             } else {
@@ -97,9 +100,9 @@ public class GameBoard extends Application {
                                                       if ((chosenRect.getY() + 2 == rectangle.getY() && chosenRect.getX() + 2 == rectangle.getX()) &&
                                                               checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() + 1] != null &&
                                                               checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() + 1].isWhite()) {
-                                                            if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                    (int) chosenRect.getX() == longAtackFrom.getX()){
-                                                                  if (chosenRect.equals(longAtackFrom)){
+                                                            if (isLongAtack) {
+                                                                  if ((int) chosenRect.getY() == longAtackFrom.getY() &&
+                                                                          (int) chosenRect.getX() == longAtackFrom.getX()) {
                                                                         capture(rectangle, 1, 1);
                                                                   }
                                                             } else {
@@ -110,8 +113,8 @@ public class GameBoard extends Application {
                                                               checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() + 1] != null &&
                                                               checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() + 1].isWhite()) {
                                                             if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                    (int) chosenRect.getX() == longAtackFrom.getX()){
-                                                                  if (chosenRect.equals(longAtackFrom)){
+                                                                    (int) chosenRect.getX() == longAtackFrom.getX()) {
+                                                                  if (chosenRect.equals(longAtackFrom)) {
                                                                         capture(rectangle, -1, 1);
                                                                   }
                                                             } else {
@@ -125,17 +128,17 @@ public class GameBoard extends Application {
                                                   (chosenRect.getY() + 1 == rectangle.getY() && chosenRect.getX() - 1 == rectangle.getX()) ||
                                                   (chosenRect.getY() - 1 == rectangle.getY() && chosenRect.getX() + 1 == rectangle.getX()) ||
                                                   (chosenRect.getY() - 1 == rectangle.getY() && chosenRect.getX() - 1 == rectangle.getX())) {
-                                                if(!isLongAtack){
-                                                      move(rectangle);
+                                                if (!isLongAtack) {
+                                                      move(rectangle,null);
                                                 }
                                           } else {
                                                 if ((chosenRect.getY() - 2 == rectangle.getY() && chosenRect.getX() + 2 == rectangle.getX()) &&
                                                         checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() - 1] != null &&
                                                         (checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() - 1].isWhite() !=
                                                                 checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite())) {
-                                                      if (isLongAtack){
+                                                      if (isLongAtack) {
                                                             if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                    (int) chosenRect.getX() == longAtackFrom.getX()){
+                                                                    (int) chosenRect.getX() == longAtackFrom.getX()) {
                                                                   capture(rectangle, 1, -1);
                                                             }
                                                       } else {
@@ -146,9 +149,9 @@ public class GameBoard extends Application {
                                                         checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() - 1] != null &&
                                                         (checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() - 1].isWhite() !=
                                                                 checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite())) {
-                                                      if (isLongAtack){
+                                                      if (isLongAtack) {
                                                             if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                    (int) chosenRect.getX() == longAtackFrom.getX()){
+                                                                    (int) chosenRect.getX() == longAtackFrom.getX()) {
                                                                   capture(rectangle, -1, -1);
                                                             }
                                                       } else {
@@ -159,9 +162,9 @@ public class GameBoard extends Application {
                                                         checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() + 1] != null &&
                                                         (checkers[(int) chosenRect.getX() + 1][(int) chosenRect.getY() + 1].isWhite() !=
                                                                 checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite())) {
-                                                      if (isLongAtack){
+                                                      if (isLongAtack) {
                                                             if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                    (int) chosenRect.getX() == longAtackFrom.getX()){
+                                                                    (int) chosenRect.getX() == longAtackFrom.getX()) {
                                                                   capture(rectangle, 1, 1);
                                                             }
                                                       } else {
@@ -172,9 +175,9 @@ public class GameBoard extends Application {
                                                         checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() + 1] != null &&
                                                         (checkers[(int) chosenRect.getX() - 1][(int) chosenRect.getY() + 1].isWhite() !=
                                                                 checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite())) {
-                                                      if (isLongAtack){
+                                                      if (isLongAtack) {
                                                             if ((int) chosenRect.getY() == longAtackFrom.getY() &&
-                                                                    (int) chosenRect.getX() == longAtackFrom.getX()){
+                                                                    (int) chosenRect.getX() == longAtackFrom.getX()) {
                                                                   capture(rectangle, -1, 1);
                                                             }
                                                       } else {
@@ -188,6 +191,8 @@ public class GameBoard extends Application {
                         gridPane.add(rectangle, row, col);
                   }
             }
+            label = new Label("Ход белых");
+            gridPane.add(label, 8, 8);
       }
 
       public void addChecker(int x, int y) {
@@ -207,10 +212,11 @@ public class GameBoard extends Application {
             rect.setFill(new ImagePattern(img));
             rect.setOnMouseClicked(
                     event -> {
-                          if (isUrTurn) {
-                                chosenRect.setStroke(Color.BLACK);
+                          if (numOfTurn % 2 == color) {
+                                label.setText("Ход белых");
                                 rect.setStroke(Color.GOLD);
                                 chosenRect = rect;
+                                chosenRect.setStroke(Color.BLACK);
                                 chosenChecker = checkers[(int) rect.getX()][(int) rect.getY()];
                                 isHaveChosenChecker = true;
                           }
@@ -228,6 +234,9 @@ public class GameBoard extends Application {
 
       @Override
       public void start(Stage primaryStage) throws Exception {
+            if(isSinglePlayer){
+                  bot = new Bot(is2PlayerWhite);
+            }
             createBoard();
             addCheckers();
             Scene scene = new Scene(gridPane, 600, 600);
@@ -236,9 +245,14 @@ public class GameBoard extends Application {
             primaryStage.show();
       }
 
-      public void move(Rectangle rectangle) {
+      public void move(Rectangle rectangle, Checker checker1) {
             if (!isLongAtack) {
-                  if (checkers[(int) rectangle.getX()][(int) rectangle.getY()] == null) {
+                  if(rectangle==null && checker1!=null){
+                        rectangle = new Rectangle();
+                        rectangle.setX(checker1.getX());
+                        rectangle.setY(checker1.getY());
+                  }
+                  if (rectangle!=null && checkers[(int) rectangle.getX()][(int) rectangle.getY()] == null) {
                         if ((rectangle.getY() == 7 && !chosenChecker.isWhite()) || (rectangle.getY() == 0) && chosenChecker.isWhite()) {
                               gridPane.getChildren().remove(chosenRect);
                               checkers[(int) chosenRect.getX()][(int) chosenRect.getY()] = null;
@@ -259,7 +273,8 @@ public class GameBoard extends Application {
                               rect.setFill(new ImagePattern(img));
                               rect.setOnMouseClicked(
                                       event -> {
-                                            if (isUrTurn) {
+                                            if (numOfTurn % 2 == color) {
+                                                  label.setText("Ход белых");
                                                   chosenRect.setStroke(Color.BLACK);
                                                   rect.setStroke(Color.GOLD);
                                                   chosenRect = rect;
@@ -290,7 +305,36 @@ public class GameBoard extends Application {
                               chosenRect.setStroke(Color.BLACK);
                               isHaveChosenChecker = false;
                         }
-                        isWhiteTurn = !isWhiteTurn;
+                        int a = checkWinner();
+                        switch (a) {
+                              case (1):
+                                    label.setText("White Winners");
+                                    break;
+                              case (2):
+                                    label.setText("Black Winners");
+                                    break;
+                              case (3):
+                                    label.setText("Draw");
+                                    break;
+                        }
+                        if(a==0){
+                              numOfTurn++;
+                              while(numOfTurn % 2 !=color){
+                                    label.setText("Ход черных");
+                                    Pair<Integer, Pair<Checker, Checker>> pair = bot.move(checkers);
+                                    if(pair.getKey()==1){
+                                          isHaveChosenChecker = true;
+                                          chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
+                                          move(null, pair.getValue().getValue());
+                                    }
+//                                    if(pair.getKey()==2){
+//                                          isHaveChosenChecker = true;
+//                                          chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
+//                                          move(null, pair.getValue().getValue());
+//                                          numOfTurn++;
+//                                    }
+                              }
+                        }
                   }
             }
       }
@@ -319,7 +363,8 @@ public class GameBoard extends Application {
                         rect.setFill(new ImagePattern(img));
                         rect.setOnMouseClicked(
                                 event -> {
-                                      if (isUrTurn) {
+                                      if (numOfTurn % 2 == color) {
+                                            label.setText("Ход белых");
                                             chosenRect.setStroke(Color.BLACK);
                                             rect.setStroke(Color.GOLD);
                                             chosenRect = rect;
@@ -354,25 +399,73 @@ public class GameBoard extends Application {
                   boolean flag2 = false;
                   boolean flag3 = false;
                   boolean flag4 = false;
-                  if (rectangle.getY() + 2 < 8) {
-                        if (rectangle.getX() + 2 < 8) {
-                              flag1 = longAtack(rectangle, 1, 1);
+                  if (checkers[(int) rectangle.getX()][(int) rectangle.getY()].isQueen()) {
+                        if (rectangle.getY() + 2 < 8) {
+                              if (rectangle.getX() + 2 < 8) {
+                                    flag1 = longAtack(rectangle, 1, 1);
+                              }
+                              if (rectangle.getX() - 2 > -1) {
+                                    flag2 = longAtack(rectangle, -1, 1);
+                              }
                         }
-                        if (rectangle.getX() - 2 > -1) {
-                              flag2 = longAtack(rectangle, -1, 1);
+                        if (rectangle.getY() - 2 > -1) {
+                              if (rectangle.getX() + 2 < 8) {
+                                    flag3 = longAtack(rectangle, 1, -1);
+                              }
+                              if (rectangle.getX() - 2 > -1) {
+                                    flag4 = longAtack(rectangle, -1, -1);
+                              }
+                        }
+                  } else {
+                        if (!checkers[(int) rectangle.getX()][(int) rectangle.getY()].isWhite() && rectangle.getY() + 2 < 8) {
+                              if (rectangle.getX() + 2 < 8) {
+                                    flag1 = longAtack(rectangle, 1, 1);
+                              }
+                              if (rectangle.getX() - 2 > -1) {
+                                    flag2 = longAtack(rectangle, -1, 1);
+                              }
+                        }
+                        if (checkers[(int) rectangle.getX()][(int) rectangle.getY()].isWhite() && rectangle.getY() - 2 > -1) {
+                              if (rectangle.getX() + 2 < 8) {
+                                    flag3 = longAtack(rectangle, 1, -1);
+                              }
+                              if (rectangle.getX() - 2 > -1) {
+                                    flag4 = longAtack(rectangle, -1, -1);
+                              }
                         }
                   }
-                  if (rectangle.getY() - 2 > -1) {
-                        if (rectangle.getX() + 2 < 8) {
-                              flag3 = longAtack(rectangle, 1, -1);
-                        }
-                        if (rectangle.getX() - 2 > -1) {
-                              flag4 = longAtack(rectangle, -1, -1);
-                        }
+                  if (!flag1 && !flag2 && !flag3 && !flag4) {
+                        isLongAtack = false;
+                        numOfTurn++;
                   }
-                  if(!flag1 && !flag2 && !flag3 && !flag4){
-                        isLongAtack=false;
-                        isWhiteTurn = !isWhiteTurn;
+                  int a = checkWinner();
+                  switch (a) {
+                        case (1):
+                              label.setText("White Winners");
+                              break;
+                        case (2):
+                              label.setText("Black Winners");
+                              break;
+                        case (3):
+                              label.setText("Draw");
+                              break;
+                  }
+                  if(a==0){
+                        numOfTurn++;
+                        while(numOfTurn % 2 !=color){
+                              Pair<Integer, Pair<Checker, Checker>> pair = bot.move(checkers);
+                              if(pair.getKey()==1){
+                                    isHaveChosenChecker = true;
+                                    chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
+                                    move(null, pair.getValue().getValue());
+                              }
+//                                    if(pair.getKey()==2){
+//                                          isHaveChosenChecker = true;
+//                                          chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
+//                                          move(null, pair.getValue().getValue());
+//                                          numOfTurn++;
+//                                    }
+                        }
                   }
             }
       }
@@ -383,15 +476,170 @@ public class GameBoard extends Application {
                     (checkers[(int) rectangle.getX() + changeX][(int) rectangle.getY() + changeY].isWhite() !=
                             checkers[(int) rectangle.getX()][(int) rectangle.getY()].isWhite())) {
                   isLongAtack = true;
-                  longAtackFrom.setXY((int) rectangle.getX(),(int) rectangle.getY());
+                  longAtackFrom.setXY((int) rectangle.getX(), (int) rectangle.getY());
                   return true;
             } else {
                   return false;
             }
       }
 
-      public boolean isWin(){
+      public int checkWinner() {
+            int white = 0;
+            int black = 0;
+            for (int row = 0; row < 8; row++) {
+                  for (int col = 0; col < 8; col++) {
+                        if (checkers[row][col] != null) {
+                              if (checkers[row][col].isWhite() && white == 0) {
+                                    if (isCanMove(checkers[row][col])) {
+                                          white++;
+                                    }
+                                    if (isCanCapture(checkers[row][col])) {
+                                          white++;
+                                    }
+                              }
+                              if (!checkers[row][col].isWhite() && black == 0) {
+                                    if (isCanMove(checkers[row][col])) {
+                                          black++;
+                                    }
+                                    if (isCanCapture(checkers[row][col])) {
+                                          black++;
+                                    }
+                              }
+                        }
+                  }
+            }
+            if (white != 0 && black == 0) {
+                  return 1;
+            }
+            if (white == 0 && black != 0) {
+                  return 2;
+            }
+            if (white == 0 && black == 0) {
+                  return 3;
+            }
+            if (black != 0 && white != 0) {
+                  return 0;
+            }
+            return 0;
+      }
 
+      public boolean isCanMove(Checker checker) {
+            int x = checker.getX();
+            int y = checker.getY();
+            if (checker.isQueen()) {
+                  if (x + 1 < 8) {
+                        if (y + 1 < 8) {
+                              if (checkers[x + 1][y + 1] == null) {
+                                    return true;
+                              }
+                        }
+                        if (y - 1 > -1) {
+                              if (checkers[x + 1][y - 1] == null) {
+                                    return true;
+                              }
+                        }
+                  }
+                  if (x - 1 > -1) {
+                        if (y + 1 < 8) {
+                              if (checkers[x - 1][y + 1] == null) {
+                                    return true;
+                              }
+                        }
+                        if (y - 1 > -1) {
+                              if (checkers[x - 1][y - 1] == null) {
+                                    return true;
+                              }
+                        }
+                  }
+            } else {
+                  if (checker.isWhite()) {
+                        if (y - 1 > -1) {
+                              if (x + 1 < 8) {
+                                    if (checkers[x + 1][y - 1] == null) {
+                                          return true;
+                                    }
+                              }
+                              if (x - 1 > -1) {
+                                    if (checkers[x - 1][y - 1] == null) {
+                                          return true;
+                                    }
+                              }
+                        }
+                  } else {
+                        if (y + 1 < 8) {
+                              if (x + 1 < 8) {
+                                    if (checkers[x + 1][y + 1] == null) {
+                                          return true;
+                                    }
+                              }
+                              if (x - 1 > -1) {
+                                    if (checkers[x - 1][y + 1] == null) {
+                                          return true;
+                                    }
+                              }
+                        }
+                  }
+            }
+            return false;
+      }
+
+      public boolean isCanCapture(Checker checker) {
+            int x = checker.getX();
+            int y = checker.getY();
+            if (checker.isQueen()) {
+                  if (x + 2 < 8) {
+                        if (y + 2 < 8) {
+                              if (checkers[x + 2][y + 2] == null && checkers[x + 1][y + 1] != null && checkers[x + 1][y + 1].isWhite() != checker.isWhite()) {
+                                    return true;
+                              }
+                        }
+                        if (y - 2 > -1) {
+                              if (checkers[x + 2][y - 2] == null && checkers[x + 1][y - 1] != null && checkers[x + 1][y - 1].isWhite() != checker.isWhite()) {
+                                    return true;
+                              }
+                        }
+                  }
+                  if (x - 2 > -1) {
+                        if (y + 2 < 8) {
+                              if (checkers[x - 2][y + 2] == null && checkers[x - 1][y + 1] != null && checkers[x - 1][y + 1].isWhite() != checker.isWhite()) {
+                                    return true;
+                              }
+                        }
+                        if (y - 2 > -1) {
+                              if (checkers[x - 2][y - 2] == null && checkers[x - 1][y - 1] != null && checkers[x - 1][y - 1].isWhite() != checker.isWhite()) {
+                                    return true;
+                              }
+                        }
+                  }
+            } else {
+                  if (checker.isWhite()) {
+                        if (y - 2 > -1) {
+                              if (x + 2 < 8) {
+                                    if (checkers[x + 2][y - 2] == null && checkers[x + 1][y - 1] != null && checkers[x + 1][y - 1].isWhite() != checker.isWhite()) {
+                                          return true;
+                                    }
+                              }
+                              if (x - 2 > -1) {
+                                    if (checkers[x - 2][y - 2] == null && checkers[x - 1][y - 1] != null && checkers[x - 1][y - 1].isWhite() != checker.isWhite()) {
+                                          return true;
+                                    }
+                              }
+                        }
+                  } else {
+                        if (y + 2 < 8) {
+                              if (x + 2 < 8) {
+                                    if (checkers[x + 2][y + 2] == null && checkers[x + 1][y + 1] != null && checkers[x + 1][y + 1].isWhite() != checker.isWhite()) {
+                                          return true;
+                                    }
+                              }
+                              if (x - 2 > -1) {
+                                    if (checkers[x - 2][y + 2] == null && checkers[x - 1][y + 1] != null && checkers[x - 1][y + 1].isWhite() != checker.isWhite()) {
+                                          return true;
+                                    }
+                              }
+                        }
+                  }
+            }
             return false;
       }
 

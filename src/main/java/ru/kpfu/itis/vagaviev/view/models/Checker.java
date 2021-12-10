@@ -22,6 +22,9 @@ public class Checker extends Cell {
             return isQueen;
       }
 
+      public Checker() {
+      }
+
       public void setQueen(boolean queen) {
             isQueen = queen;
       }
