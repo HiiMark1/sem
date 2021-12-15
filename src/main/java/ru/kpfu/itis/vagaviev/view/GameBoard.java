@@ -17,7 +17,7 @@ import ru.kpfu.itis.vagaviev.view.models.Checker;
 import java.util.Objects;
 
 public class GameBoard extends Application {
-      boolean isSinglePlayer = true;
+      boolean isSinglePlayer = false;
       GridPane gridPane = new GridPane();
       int size = 50;
       Checker[][] checkers = new Checker[8][8];
@@ -44,8 +44,10 @@ public class GameBoard extends Application {
                         rectangle.setHeight(size);
                         if ((row + col) % 2 == 0) {
                               rectangle.setFill(Color.WHITE);
+                              System.out.println(rectangle.getFill());
                         } else {
                               rectangle.setFill(Color.BLACK);
+                              System.out.println(rectangle.getFill());
                         }
                         rectangle.setStroke(Color.BLACK);
                         rectangle.setOnMouseClicked(event -> {
@@ -287,8 +289,6 @@ public class GameBoard extends Application {
                               gridPane.add(rectangles[x][y], x, y);
                               Checker checker = new Checker(x, y, chosenChecker.isWhite(), true);
                               checkers[x][y] = checker;
-                              chosenRect.setX(rectangle.getX());
-                              chosenRect.setY(rectangle.getY());
                               chosenRect.setStroke(Color.BLACK);
                               isHaveChosenChecker = false;
                         } else {
@@ -299,8 +299,6 @@ public class GameBoard extends Application {
                               rectangles[(int) rectangle.getX()][(int) rectangle.getY()] =
                                       rectangles[(int) chosenRect.getX()][(int) chosenRect.getY()];
                               rectangles[(int) chosenRect.getX()][(int) chosenRect.getY()] = null;
-                              chosenRect.setX(rectangle.getX());
-                              chosenRect.setY(rectangle.getY());
                               gridPane.add(chosenRect, (int) rectangle.getX(), (int) rectangle.getY());
                               chosenRect.setStroke(Color.BLACK);
                               isHaveChosenChecker = false;
@@ -319,20 +317,26 @@ public class GameBoard extends Application {
                         }
                         if(a==0){
                               numOfTurn++;
-                              while(numOfTurn % 2 !=color){
+                              if(numOfTurn % 2 == 1){
                                     label.setText("Ход черных");
-                                    Pair<Integer, Pair<Checker, Checker>> pair = bot.move(checkers);
-                                    if(pair.getKey()==1){
-                                          isHaveChosenChecker = true;
-                                          chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
-                                          move(null, pair.getValue().getValue());
-                                    }
+                              } else {
+                                    label.setText("Ход белых");
+                              }
+                              if(isSinglePlayer){
+                                    while(numOfTurn % 2 !=color){
+                                          Pair<Integer, Pair<Checker, Checker>> pair = bot.move(checkers);
+                                          if(pair.getKey()==1){
+                                                isHaveChosenChecker = true;
+                                                chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
+                                                move(null, pair.getValue().getValue());
+                                          }
 //                                    if(pair.getKey()==2){
 //                                          isHaveChosenChecker = true;
 //                                          chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
 //                                          move(null, pair.getValue().getValue());
 //                                          numOfTurn++;
 //                                    }
+                                    }
                               }
                         }
                   }
@@ -377,8 +381,6 @@ public class GameBoard extends Application {
                         gridPane.add(rectangles[x][y], x, y);
                         Checker checker = new Checker(x, y, chosenChecker.isWhite(), true);
                         checkers[x][y] = checker;
-                        chosenRect.setX(rectangle.getX());
-                        chosenRect.setY(rectangle.getY());
                         chosenRect.setStroke(Color.BLACK);
                         isHaveChosenChecker = false;
                   } else {
@@ -390,8 +392,6 @@ public class GameBoard extends Application {
                         rectangles[(int) chosenRect.getX()][(int) chosenRect.getY()] = null;
                         checkers[(int) chosenRect.getX() + changeX][(int) chosenRect.getY() + changeY] = null;
                         chosenRect.setStroke(Color.BLACK);
-                        chosenRect.setX(rectangle.getX());
-                        chosenRect.setY(rectangle.getY());
                         gridPane.add(chosenRect, (int) rectangle.getX(), (int) rectangle.getY());
                         isHaveChosenChecker = false;
                   }
@@ -453,18 +453,22 @@ public class GameBoard extends Application {
                   if(a==0){
                         numOfTurn++;
                         while(numOfTurn % 2 !=color){
-                              Pair<Integer, Pair<Checker, Checker>> pair = bot.move(checkers);
-                              if(pair.getKey()==1){
-                                    isHaveChosenChecker = true;
-                                    chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
-                                    move(null, pair.getValue().getValue());
-                              }
+                              if(isSinglePlayer){
+                                    Pair<Integer, Pair<Checker, Checker>> pair = bot.move(checkers);
+                                    if(pair.getKey()==1){
+                                          isHaveChosenChecker = true;
+                                          chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
+                                          move(null, pair.getValue().getValue());
+                                    }
 //                                    if(pair.getKey()==2){
 //                                          isHaveChosenChecker = true;
 //                                          chosenRect=rectangles[pair.getValue().getKey().getX()][pair.getValue().getKey().getY()];
 //                                          move(null, pair.getValue().getValue());
 //                                          numOfTurn++;
 //                                    }
+                              } else {
+
+                              }
                         }
                   }
             }
