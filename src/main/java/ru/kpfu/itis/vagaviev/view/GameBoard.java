@@ -47,7 +47,6 @@ public class GameBoard extends Application {
                         }
                         rectangle.setStroke(Color.BLACK);
                         rectangle.setOnMouseClicked(event -> {
-                              System.out.println(isLongAttack);
                               if (isHaveChosenChecker && (checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isWhite())) {
                                     if (!checkers[(int) chosenRect.getX()][(int) chosenRect.getY()].isQueen()) {
                                           if (checkCanMove(rectangle, 1, 1) || checkCanMove(rectangle, -1, 1) ||
@@ -231,7 +230,6 @@ public class GameBoard extends Application {
 
       private void move(Rectangle rectangle) {
             if (!isLongAttack) {
-                  System.out.println("Move " + checkers[(int) rectangle.getX()][(int) rectangle.getY()]);
                   if (checkers[(int) rectangle.getX()][(int) rectangle.getY()] == null) {
                         if ((rectangle.getY() == 7 && !chosenChecker.isWhite()) || (rectangle.getY() == 0) && chosenChecker.isWhite()) {
                               gridPane.getChildren().remove(chosenRect);
@@ -624,6 +622,74 @@ public class GameBoard extends Application {
       private void botMove() {
             ArrayList<Pair<Checker, Checker>> moveList = new ArrayList<>();
             ArrayList<Pair<Checker, Checker>> attackList = new ArrayList<>();
+            checkBotMoves(moveList, attackList);
+            if (attackList.size() != 0) {
+                  int i = random.nextInt(attackList.size());
+                  Pair<Checker, Checker> pair = attackList.get(i);
+                  int changeX = (pair.getValue().getX() - pair.getKey().getX()) / 2;
+                  int changeY = (pair.getValue().getY() - pair.getKey().getY()) / 2;
+                  gridPane.getChildren().remove(rectangles[pair.getKey().getX()][pair.getKey().getY()]);
+                  gridPane.getChildren().remove(rectangles[pair.getKey().getX() + changeX][pair.getKey().getY() + changeY]);
+                  rectangles[pair.getValue().getX()][pair.getValue().getY()] = rectangles[pair.getKey().getX()][pair.getKey().getY()];
+                  rectangles[pair.getKey().getX()][pair.getKey().getY()] = null;
+                  rectangles[pair.getKey().getX() + changeX][pair.getKey().getY() + changeY] = null;
+                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setX(rectangles[pair.getValue().getX()][pair.getValue().getY()].getX() + changeX);
+                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setY(rectangles[pair.getValue().getX()][pair.getValue().getY()].getY() + changeY);
+                  gridPane.add(rectangles[pair.getValue().getX()][pair.getValue().getY()], pair.getValue().getX(), pair.getValue().getY());
+                  checkers[pair.getValue().getX()][pair.getValue().getY()] = new Checker(pair.getValue().getX(), pair.getValue().getY(),
+                          checkers[pair.getKey().getX()][pair.getKey().getY()].isWhite(), checkers[pair.getKey().getX()][pair.getKey().getY()].isQueen());
+                  checkers[pair.getKey().getX()][pair.getKey().getY()] = null;
+                  checkers[pair.getValue().getX()][pair.getValue().getY()].setXY(checkers[pair.getValue().getX()][pair.getValue().getY()].getX() + changeX,
+                          checkers[pair.getValue().getX()][pair.getValue().getY()].getY() + changeY);
+                  checkers[pair.getKey().getX() + changeX][pair.getKey().getY() + changeY] = null;
+                  if (rectangles[pair.getValue().getX()][pair.getValue().getY()].getY() == 7) {
+                        gridPane.getChildren().remove(rectangles[pair.getValue().getX()][pair.getValue().getY()]);
+                        rectangles[pair.getValue().getX()][pair.getValue().getY()] = null;
+                        checkers[pair.getValue().getX()][pair.getValue().getY()] = null;
+                        Image img = new Image(Objects.requireNonNull(this.getClass().getResource("/qBlack.png")).toExternalForm());
+                        int x = pair.getValue().getX();
+                        int y = pair.getValue().getY();
+                        Rectangle rect = new Rectangle();
+                        rect.setX(x);
+                        rect.setY(y);
+                        rect.setWidth(size);
+                        rect.setHeight(size);
+                        rect.setFill(new ImagePattern(img));
+                        rectangles[x][y] = rect;
+                        gridPane.add(rectangles[x][y], x, y);
+                  }
+            } else {
+                  int i = random.nextInt(moveList.size());
+                  Pair<Checker, Checker> pair = moveList.get(i);
+                  rectangles[pair.getValue().getX()][pair.getValue().getY()] = rectangles[pair.getKey().getX()][pair.getKey().getY()];
+                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setX(pair.getValue().getX());
+                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setY(pair.getValue().getY());
+                  gridPane.getChildren().remove(rectangles[pair.getKey().getX()][pair.getKey().getY()]);
+                  rectangles[pair.getKey().getX()][pair.getKey().getY()] = null;
+                  gridPane.add(rectangles[pair.getValue().getX()][pair.getValue().getY()], pair.getValue().getX(), pair.getValue().getY());
+                  checkers[pair.getValue().getX()][pair.getValue().getY()] = new Checker(pair.getValue().getX(), pair.getValue().getY(),
+                          checkers[pair.getKey().getX()][pair.getKey().getY()].isWhite(), checkers[pair.getKey().getX()][pair.getKey().getY()].isQueen());
+                  checkers[pair.getKey().getX()][pair.getKey().getY()] = null;
+                  if (rectangles[pair.getValue().getX()][pair.getValue().getY()].getY() == 7) {
+                        gridPane.getChildren().remove(rectangles[pair.getValue().getX()][pair.getValue().getY()]);
+                        rectangles[pair.getValue().getX()][pair.getValue().getY()] = null;
+                        checkers[pair.getValue().getX()][pair.getValue().getY()] = null;
+                        Image img = new Image(Objects.requireNonNull(this.getClass().getResource("/qBlack.png")).toExternalForm());
+                        int x = pair.getValue().getX();
+                        int y = pair.getValue().getY();
+                        Rectangle rect = new Rectangle();
+                        rect.setX(x);
+                        rect.setY(y);
+                        rect.setWidth(size);
+                        rect.setHeight(size);
+                        rect.setFill(new ImagePattern(img));
+                        rectangles[x][y] = rect;
+                        gridPane.add(rectangles[x][y], x, y);
+                  }
+            }
+      }
+
+      private void checkBotMoves(ArrayList<Pair<Checker, Checker>> moveList, ArrayList<Pair<Checker, Checker>> attackList){
             for (int row = 0; row < 8; row++) {
                   for (int col = 0; col < 8; col++) {
                         Checker checker = checkers[row][col];
@@ -713,74 +779,6 @@ public class GameBoard extends Application {
                                     }
                               }
                         }
-                  }
-            }
-            if (attackList.size() != 0) {
-                  int i = random.nextInt(attackList.size());
-                  Pair<Checker, Checker> pair = attackList.get(i);
-                  int changeX = (pair.getValue().getX() - pair.getKey().getX()) / 2;
-                  int changeY = (pair.getValue().getY() - pair.getKey().getY()) / 2;
-                  gridPane.getChildren().remove(rectangles[pair.getKey().getX()][pair.getKey().getY()]);
-                  gridPane.getChildren().remove(rectangles[pair.getKey().getX() + changeX][pair.getKey().getY() + changeY]);
-                  rectangles[pair.getValue().getX()][pair.getValue().getY()] = rectangles[pair.getKey().getX()][pair.getKey().getY()];
-                  rectangles[pair.getKey().getX()][pair.getKey().getY()] = null;
-                  rectangles[pair.getKey().getX() + changeX][pair.getKey().getY() + changeY] = null;
-                  System.out.println("Bot " + rectangles[pair.getValue().getX()][pair.getValue().getY()]);
-                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setX(rectangles[pair.getValue().getX()][pair.getValue().getY()].getX() + changeX);
-                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setY(rectangles[pair.getValue().getX()][pair.getValue().getY()].getY() + changeY);
-                  gridPane.add(rectangles[pair.getValue().getX()][pair.getValue().getY()], pair.getValue().getX(), pair.getValue().getY());
-                  checkers[pair.getValue().getX()][pair.getValue().getY()] = new Checker(pair.getValue().getX(), pair.getValue().getY(),
-                          checkers[pair.getKey().getX()][pair.getKey().getY()].isWhite(), checkers[pair.getKey().getX()][pair.getKey().getY()].isQueen());
-                  checkers[pair.getKey().getX()][pair.getKey().getY()] = null;
-                  checkers[pair.getValue().getX()][pair.getValue().getY()].setXY(checkers[pair.getValue().getX()][pair.getValue().getY()].getX() + changeX,
-                          checkers[pair.getValue().getX()][pair.getValue().getY()].getY() + changeY);
-                  checkers[pair.getKey().getX() + changeX][pair.getKey().getY() + changeY] = null;
-                  if (rectangles[pair.getValue().getX()][pair.getValue().getY()].getY() == 7) {
-                        gridPane.getChildren().remove(rectangles[pair.getValue().getX()][pair.getValue().getY()]);
-                        rectangles[pair.getValue().getX()][pair.getValue().getY()] = null;
-                        checkers[pair.getValue().getX()][pair.getValue().getY()] = null;
-                        Image img = new Image(Objects.requireNonNull(this.getClass().getResource("/qBlack.png")).toExternalForm());
-                        int x = pair.getValue().getX();
-                        int y = pair.getValue().getY();
-                        Rectangle rect = new Rectangle();
-                        rect.setX(x);
-                        rect.setY(y);
-                        rect.setWidth(size);
-                        rect.setHeight(size);
-                        rect.setFill(new ImagePattern(img));
-                        rectangles[x][y] = rect;
-                        gridPane.add(rectangles[x][y], x, y);
-                  }
-            } else {
-                  int i = random.nextInt(moveList.size());
-                  Pair<Checker, Checker> pair = moveList.get(i);
-                  rectangles[pair.getValue().getX()][pair.getValue().getY()] = rectangles[pair.getKey().getX()][pair.getKey().getY()];
-                  //TODO fix nullPointer
-                  //TODO choose black or white
-                  System.out.println("Botmove " + rectangles[pair.getValue().getX()][pair.getValue().getY()]);
-                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setX(pair.getValue().getX());
-                  rectangles[pair.getValue().getX()][pair.getValue().getY()].setY(pair.getValue().getY());
-                  gridPane.getChildren().remove(rectangles[pair.getKey().getX()][pair.getKey().getY()]);
-                  rectangles[pair.getKey().getX()][pair.getKey().getY()] = null;
-                  gridPane.add(rectangles[pair.getValue().getX()][pair.getValue().getY()], pair.getValue().getX(), pair.getValue().getY());
-                  checkers[pair.getValue().getX()][pair.getValue().getY()] = new Checker(pair.getValue().getX(), pair.getValue().getY(),
-                          checkers[pair.getKey().getX()][pair.getKey().getY()].isWhite(), checkers[pair.getKey().getX()][pair.getKey().getY()].isQueen());
-                  checkers[pair.getKey().getX()][pair.getKey().getY()] = null;
-                  if (rectangles[pair.getValue().getX()][pair.getValue().getY()].getY() == 7) {
-                        gridPane.getChildren().remove(rectangles[pair.getValue().getX()][pair.getValue().getY()]);
-                        rectangles[pair.getValue().getX()][pair.getValue().getY()] = null;
-                        checkers[pair.getValue().getX()][pair.getValue().getY()] = null;
-                        Image img = new Image(Objects.requireNonNull(this.getClass().getResource("/qBlack.png")).toExternalForm());
-                        int x = pair.getValue().getX();
-                        int y = pair.getValue().getY();
-                        Rectangle rect = new Rectangle();
-                        rect.setX(x);
-                        rect.setY(y);
-                        rect.setWidth(size);
-                        rect.setHeight(size);
-                        rect.setFill(new ImagePattern(img));
-                        rectangles[x][y] = rect;
-                        gridPane.add(rectangles[x][y], x, y);
                   }
             }
       }
