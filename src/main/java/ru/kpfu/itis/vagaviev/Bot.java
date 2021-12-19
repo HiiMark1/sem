@@ -11,8 +11,8 @@ public class Bot {
       Checker[][] checkers;
       Checker moveTo = new Checker();
       Checker atackTo = new Checker();
-      ArrayList<Pair<Checker, Checker>> canMove = new ArrayList<>();
-      ArrayList<Pair<Checker, Checker>> canAtack = new ArrayList<>();
+      ArrayList<Pair<Checker, Checker>> canMove;
+      ArrayList<Pair<Checker, Checker>> canAtack;
       Random random = new Random();
 
       public Bot(boolean isWhite) {
@@ -20,31 +20,36 @@ public class Bot {
       }
 
       public Pair<Integer, Pair<Checker, Checker>> move(Checker[][] checkers) {
+            canMove = new ArrayList<>();
+            canAtack = new ArrayList<>();
             this.checkers = checkers;
             Pair<Checker, Checker> pairAtack;
             Pair<Checker, Checker> pairMove;
             for (int row = 0; row < 8; row++) {
                   for (int col = 0; col < 8; col++) {
                         if (checkers[row][col] != null && checkers[row][col].isWhite() == this.isWhite) {
-                              System.out.println(checkers[row][col]);
                               if (isCanMove(checkers[row][col])) {
                                     pairMove = new Pair<>(checkers[row][col], moveTo);
-                                    System.out.println(checkers[row][col]);
-                                    System.out.println(moveTo);
                                     canMove.add(pairMove);
                               }
                               if (isCanCapture(checkers[row][col])) {
+                                    System.out.println(22);
                                     pairAtack = new Pair<>(checkers[row][col], atackTo);
                                     canAtack.add(pairAtack);
                               }
                         }
                   }
             }
-            if (canMove.size() != 0) {
-                  System.out.println(canMove.get(random.nextInt(canMove.size())));
-                  return new Pair<>(1, canMove.get(random.nextInt(canMove.size())));
+            if(canAtack.size()!=0){
+                  System.out.println(13);
+                  return new Pair<>(2, canAtack.get(random.nextInt(canAtack.size())));
             } else {
-                  return null;
+                  if (canMove.size() != 0) {
+                        System.out.println(14);
+                        return new Pair<>(1, canMove.get(random.nextInt(canMove.size())));
+                  } else {
+                        return null;
+                  }
             }
       }
 
@@ -165,16 +170,25 @@ public class Bot {
                               }
                         }
                   } else {
-                        if (y + 2 > 8) {
+                        if (y + 2 < 8) {
                               if (x + 2 < 8) {
+                                    System.out.println(66);
                                     if (checkers[x + 2][y + 2] == null && checkers[x + 1][y + 1] != null && checkers[x + 1][y + 1].isWhite() != checker.isWhite()) {
                                           atackTo = new Checker(x + 2, y + 2, checker.isWhite(), checker.isQueen());
+                                          System.out.println(666);
                                           return true;
                                     }
                               }
                               if (x - 2 > -1) {
+                                    System.out.println(x + "   ,,   " + y);
+                                    System.out.println(88);
+                                    System.out.println(checkers[x - 2][y + 2] == null);
+                                    if(checkers[x - 1][y + 1] != null){
+                                          System.out.println(checkers[x - 1][y + 1].isWhite() != checker.isWhite());
+                                    }
                                     if (checkers[x - 2][y + 2] == null && checkers[x - 1][y + 1] != null && checkers[x - 1][y + 1].isWhite() != checker.isWhite()) {
                                           atackTo = new Checker(x - 2, y + 2, checker.isWhite(), checker.isQueen());
+                                          System.out.println(888);
                                           return true;
                                     }
                               }

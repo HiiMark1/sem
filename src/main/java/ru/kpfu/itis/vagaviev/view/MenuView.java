@@ -35,11 +35,6 @@ public class MenuView extends BaseView {
 
             singlePlayer = new Button("SinglePlayer");
             singlePlayer.setOnAction(event -> {
-                  try {
-                        application.startGameClient();
-                  } catch (IOException e) {
-                        e.printStackTrace();
-                  }
                   application.getBoardView().isSinglePlayer=true;
                   application.setView(application.getBoardView());
             });

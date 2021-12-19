@@ -28,7 +28,7 @@ public class BoardView extends BaseView {
       boolean isLongAtack = false;
       Cell longAtackFrom = new Cell();
       Bot bot = null;
-      Label label;
+      Label label = new Label();
       int color = 0;
       int numOfTurn = 0;
       AnchorPane pane = null;
@@ -442,7 +442,8 @@ public class BoardView extends BaseView {
 //                                    }
                               } else {
                                     application.getGameClient().sendMessage(2 + "," + (int) chosenRect.getX() + "," + (int) chosenRect.getY() + "," +
-                                            (int) rectangle.getX() + "," + (int) rectangle.getY());
+                                            (int) rectangle.getX() + "," + (int) rectangle.getY() + "," + 2);
+                                    isLongAtack = false;
                               }
                         }
                   }
